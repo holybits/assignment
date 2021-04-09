@@ -50,7 +50,7 @@ class Transaction(APIView):
             return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         response = {
-            "status": code,
+            "status": "code",
             "message": msg,
         }
 
@@ -79,7 +79,11 @@ class Transaction(APIView):
             return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         del transaction['id']
-        response = transaction
+        response = {
+                    "amount":transaction["amount"],
+                    "parent_id":transaction["parent_id"],
+                    "type":transaction["type"]
+                    }
 
         logger.info("Response: %s" % response)
 
@@ -103,8 +107,7 @@ class ListTransaction(APIView):
         transaction_list,err = TransactionController.get_transaction_list(**transaction_filter)
         resp = []
         for transaction in transaction_list:
-            del transaction['id']
-            resp.append(transaction)
+            resp.append(transaction["id"])
         if err:
             code, msg = err[0],err[1]
             response = {"status": code, "message": msg}
