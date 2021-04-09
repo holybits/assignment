@@ -26,4 +26,4 @@ class Transaction(CommonModel):
         return transaction_dict
 
     class Meta:
-        db_table = 'pos_pop_up'
+        db_table = 'transaction'
