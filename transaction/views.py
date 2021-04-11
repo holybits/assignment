@@ -81,7 +81,6 @@ class Transaction(APIView):
                 response = {"status": code, "message": msg}
                 return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            del transaction['id']
             response = {
                         "amount":transaction["amount"],
                         "parent_id":transaction["parent_id"],
