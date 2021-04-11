@@ -17,7 +17,7 @@ class TransactionRepository(object):
             return transaction.to_dict(), None
         except Exception as e:
             logger.debug(traceback.format_exc(e))
-            return None, Errors.Database.GENERIC_CREATE
+            raise e
 
     @staticmethod
     def get_transaction(**filters):
@@ -29,7 +29,7 @@ class TransactionRepository(object):
             return transaction, None
         except Exception as e:
             logger.debug(traceback.format_exc(e))
-            return None, Errors.Database.GENERIC_LIST
+            raise e
 
     @staticmethod
     def get_transaction_list(**filters):
@@ -43,4 +43,4 @@ class TransactionRepository(object):
             return transaction_list, None
         except Exception as e:
             logger.debug(traceback.format_exc(e))
-            return None, Errors.Database.GENERIC_LIST
+            raise e

@@ -10,7 +10,8 @@ class Errors:
 
 
     class NotFound:
-        TRANSACTION_NOT_FOUND         = (2001,"Transaction Not Found.")
+        TRANSACTION_NOT_FOUND                = (2001,"Transaction Not Found.")
+        PARENT_TRANSACTION_NOT_FOUND         = (2002,"Parent Transaction Not Found With Given Parent ID.")
 
 
     class DatabaseError:
@@ -26,3 +27,5 @@ class Errors:
         TRANSACTION_AMOUNT_MISSING  = (5002, "Transaction Amount is missing.")
         TRANSACTION_TYPE_MISSING    = (5003, "Transaction Type is missing.")
 
+    class Generic:
+        GENERIC =(7001,"Oops something went wrong.")

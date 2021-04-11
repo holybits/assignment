@@ -37,26 +37,29 @@ class Transaction(APIView):
             "amount":request.data["amount"],
             "parent_id":request.data.get("parent_id",None),
             "type":request.data["type"]
-
         }
-        transaction,err = TransactionController.create_transaction_record(**create_transaction_dict)
+        try:
+            transaction,err = TransactionController.create_transaction_record(**create_transaction_dict)
 
-        if transaction:
-            code=0
-            msg="ok"
-        if err:
-            code, msg = err[0],err[1]
-            response = {"status": code, "message": msg}
+            if transaction:
+                code=0
+                msg="ok"
+            if err:
+                code, msg = err[0],err[1]
+                response = {"status": code, "message": msg}
+                return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            response = {
+                "status": "code",
+                "message": msg,
+            }
+
+            logger.info("Response: %s" % response)
+
+            return Response(response, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            response = {"status":Errors.DatabaseError.GENERIC_CREATE[0],"message":Errors.DatabaseError.GENERIC_CREATE[1]}
             return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        response = {
-            "status": "code",
-            "message": msg,
-        }
-
-        logger.info("Response: %s" % response)
-
-        return Response(response, status=status.HTTP_201_CREATED)
 
     def get(self, request, *args, **kwargs):
         logger.info("********** Inside Transaction API **********")
@@ -69,25 +72,29 @@ class Transaction(APIView):
             code, msg = Errors.Missing.TRANSACTION_ID_MISSING
             response = {"status": code, "message": msg}
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            transaction_filter={"id":transaction_id}
+            transaction,err = TransactionController.get_transaction(**transaction_filter)
 
-        transaction_filter={"id":transaction_id}
-        transaction,err = TransactionController.get_transaction(**transaction_filter)
+            if err:
+                code, msg = err[0],err[1]
+                response = {"status": code, "message": msg}
+                return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        if err:
-            code, msg = err[0],err[1]
-            response = {"status": code, "message": msg}
+            del transaction['id']
+            response = {
+                        "amount":transaction["amount"],
+                        "parent_id":transaction["parent_id"],
+                        "type":transaction["type"]
+                        }
+
+            logger.info("Response: %s" % response)
+
+            return Response(response, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            response = {"status":Errors.DatabaseError.GENERIC_LIST[0],"message":Errors.DatabaseError.GENERIC_LIST[1]}
             return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        del transaction['id']
-        response = {
-                    "amount":transaction["amount"],
-                    "parent_id":transaction["parent_id"],
-                    "type":transaction["type"]
-                    }
-
-        logger.info("Response: %s" % response)
-
-        return Response(response, status=status.HTTP_200_OK)
 
 
 class ListTransaction(APIView):
@@ -102,22 +109,25 @@ class ListTransaction(APIView):
         if not transaction_type:
             code, msg = Errors.Missing.TRANSACTION_ID_MISSING
             error = True
+        try:
+            transaction_filter={"type":transaction_type}
+            transaction_list,err = TransactionController.get_transaction_list(**transaction_filter)
+            resp = []
+            for transaction in transaction_list:
+                resp.append(transaction["id"])
+            if err:
+                code, msg = err[0],err[1]
+                response = {"status": code, "message": msg}
+                return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        transaction_filter={"type":transaction_type}
-        transaction_list,err = TransactionController.get_transaction_list(**transaction_filter)
-        resp = []
-        for transaction in transaction_list:
-            resp.append(transaction["id"])
-        if err:
-            code, msg = err[0],err[1]
-            response = {"status": code, "message": msg}
+            response = {"transactions":resp}
+
+            logger.info("Response: %s" % response)
+
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as e:
+            response = {"status":Errors.DatabaseError.GENERIC_LIST[0],"message":Errors.DatabaseError.GENERIC_LIST[1]}
             return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        response = {"transactions":resp}
-
-        logger.info("Response: %s" % response)
-
-        return Response(response, status=status.HTTP_200_OK)
 
 
 class RelatedTransactionSum(APIView):
@@ -132,18 +142,21 @@ class RelatedTransactionSum(APIView):
             code, msg = Errors.Missing.TRANSACTION_ID_MISSING
             response = {"status": code, "message": msg}
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            total_sum , err = TransactionController.calculate_sum_of_linked_transactions(transaction_id=transaction_id)
+            if err:
+                code, msg = err[0],err[1]
+                response = {"status": code, "message": msg}
+                return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        total_sum , err = TransactionController.calculate_sum_of_linked_transactions(transaction_id=transaction_id)
-        if err:
-            code, msg = err[0],err[1]
-            response = {"status": code, "message": msg}
+            response ={"sum":total_sum}
+
+            logger.info("Response: %s" % response)
+
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as e:
+            response = {"status":Errors.Generic.GENERIC[0],"message":Errors.Generic.GENERIC[1]}
             return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        response ={"sum":total_sum}
-
-        logger.info("Response: %s" % response)
-
-        return Response(response, status=status.HTTP_200_OK)
 
 transaction             = Transaction.as_view()
 transaction_list        = ListTransaction.as_view()

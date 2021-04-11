@@ -60,7 +60,7 @@ class TransactionTest(TestCase):
             "id": 21,
             "amount": 12,
             "type": 'debit',
-            "parent_id":9
+            "parent_id":20
          }
 
         second_transaction,err = TransactionController.create_transaction_record(**second_transaction_details)
@@ -69,7 +69,7 @@ class TransactionTest(TestCase):
             "id": 22,
             "amount": 100,
             "type": 'credit',
-            "parent_id": 10
+            "parent_id": 21
         }
 
         third_transaction,err = TransactionController.create_transaction_record(**third_transaction_details)
