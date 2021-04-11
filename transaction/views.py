@@ -108,7 +108,7 @@ class ListTransaction(APIView):
         msg = None
         if not transaction_type:
             code, msg = Errors.Missing.TRANSACTION_ID_MISSING
-            error = True
+
         try:
             transaction_filter={"type":transaction_type}
             transaction_list,err = TransactionController.get_transaction_list(**transaction_filter)
